@@ -1,11 +1,8 @@
 Package: STA578
-Title: Functions for analyzing occupancy models using Bayesian methods.
+Title: Functions for a statistical computing course
 Version: 0.1.0
 Authors@R: "Derek Sonderegger <derek.sonderegger@nau.edu> [aut, cre]"
-Description: This package provides facilities for analyzing occupancy models
-    using Bayesian methodology with the fitting being done via STAN. These
-    methods provide a convenient interface using standard R formula notation
-    for covariates.
+Description: Functions and data for a course at Northern Arizona University on statistical computing.
 Depends:
     R (>= 3.1.0),
     ggplot2,
