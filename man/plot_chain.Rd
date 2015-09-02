@@ -16,4 +16,49 @@ plot_chain(density, chain, proposed)
 \description{
 Graph the first few steps of a MCMC chain
 }
+\examples{
+# Target Distribution
+df <- function(x){
+   return(.7*dnorm(x, mean=2, sd=1) + .3*dnorm(x, mean=5, sd=1))
+}
+x <- seq(-3,12, length=200)
+density.data <- data.frame(x=x, y=df(x))
+density <- ggplot( density.data, aes(x=x, y=y)) +
+   geom_line() +
+   labs(y='f(x)', x='x')
+density
+
+# Define the proposal distribution
+rproposal <- function(x.i){
+  out <- x.i + runif(1, -2, 2)  # x.i + 1 observation from Uniform(-2, 2)
+  return(out)
+}
+
+# First chain step
+x <- 3;       # starting value for the chain
+x.star <- 3   # initialize the vector of proposal values
+x.star[2] <- rproposal( x[1] )
+x.star[2]
+if( df(x.star[2]) / df(x[1])  >  runif(1) ){
+  x[2] <- x.star[2]
+}else{
+  x[2] <- x[1]
+}
+
+# Show the first proposed value
+plot_chain(density, x, x.star)
+
+# Take a few more steps in the chain
+for( i in 2:10 ){
+  x.star[i+1] <- rproposal( x[i] )
+  if( df(x.star[i+1]) / df(x[i]) > runif(1) ){
+    x[i+1] <- x.star[i+1]
+  }else{
+    x[i+1] <- x[i]
+  }
+}
+
+# Show the first 10 steps of the chain
+plot_chain(density, x, x.star)
+}
 
