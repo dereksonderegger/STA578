@@ -4,7 +4,7 @@
 \alias{MCMC}
 \title{Create a single Markov Chain Monte Carlo simulation}
 \usage{
-MCMC(df, start, rprop, dprop = function(to, from) {     1 }, N = 1000)
+MCMC(df, start, rprop, dprop = NULL, N = 1000)
 }
 \arguments{
 \item{df}{A function that is the target distribution}
