@@ -246,7 +246,9 @@ mMCMC <- function(df, start, rprop, dprop=NULL, N=1000, num.chains=4){
 #'   stat_contour(aes(z=Z)) 
 #' target.map 
 #' 
-#' chains <- H.MCMC(dtarget, start=c(3,10), Eps=.5, L=10, N=2000, num.chains=4)
+#' chains <- H.MCMC(dtarget, start=c(3,9), Eps=.5, L=20, N=1000, num.chains=4)
+#' chains <- H.MCMC(dtarget, start=c(3,9), Eps=.5, L=10, N=1000, num.chains=4)
+#' chains <- H.MCMC(dtarget, start=c(3,9), Eps=.5, L=7, N=1000, num.chains=4)
 #' trace_plot(chains)
 #' 
 #'  target.map +

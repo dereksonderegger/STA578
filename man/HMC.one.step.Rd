@@ -11,8 +11,30 @@ One step of Hamiltonian Monte Carlo
 }
 \examples{
 dtarget <- function(x){
-  # dmvnorm(x, mean=c(3,10), sigma=matrix(c(3,3,3,7), nrow=2))
   dmvnorm(x, mean=c(3,10), sigma=matrix(c(1,0,0,1), nrow=2))
+}
+x1 <- seq(0,6,length=101)
+x2 <- seq(7,13, length=101)
+contour.data <- expand.grid(x1=x1, x2=x2)
+contour.data$Z <- apply(contour.data, MARGIN=1, dtarget)
+target.map <- ggplot(contour.data, aes(x=x1, y=x2)) +
+  stat_contour(aes(z=Z))
+target.map
+
+U <- function(x){ return( -log(dtarget(x))) }
+steps <- HMC.one.step(U, .4, L=40, c(runif(1,1,5),runif(1,8,12)))
+path.data <- as.data.frame(steps$q)
+colnames(path.data) <- c('x1','x2')
+target.map +
+  geom_path(data=path.data, aes(z=0), color='green', alpha=1) +
+  geom_point(data=path.data, aes(z=0), color='green') +
+  geom_point(data=path.data[1,], color='red', size=4) +
+  geom_point(data=path.data[nrow(path.data),], color='blue', size=4)
+
+
+# A little harder...
+dtarget <- function(x){
+  dmvnorm(x, mean=c(3,10), sigma=matrix(c(3,3,3,7), nrow=2))
 }
 x1 <- seq(-6,12,length=101)
 x2 <- seq(-11,31, length=101)
@@ -51,7 +73,9 @@ steps <- HMC.one.step(U, .15, L=1000, c(runif(1,-10,10),runif(1,0,10)))
 path.data <- as.data.frame(steps$q)
 colnames(path.data) <- c('x1','x2')
 target.map +
-  geom_path(data=path.data, aes(z=0), color='red') +
-  geom_point(data=path.data[c(1,nrow(steps)),], color='red', size=2)
+  geom_path(data=path.data, aes(z=0), color='green', alpha=1) +
+  geom_point(data=path.data, aes(z=0), color='green') +
+  geom_point(data=path.data[1,], color='red', size=4) +
+  geom_point(data=path.data[nrow(path.data),], color='blue', size=4)
 }
 

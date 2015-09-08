@@ -11,6 +11,34 @@ Hamiltonian Markov Chain Monte Carlo
 }
 \examples{
 dtarget <- function(x){
+  dmvnorm(x, mean=c(3,10), sigma=matrix(c(1,0,0,1), nrow=2))
+}
+x1 <- seq(0,6,length=101)
+x2 <- seq(7,13, length=101)
+contour.data <- expand.grid(x1=x1, x2=x2)
+contour.data$Z <- apply(contour.data, MARGIN=1, dtarget)
+target.map <- ggplot(contour.data, aes(x=x1, y=x2)) +
+  stat_contour(aes(z=Z))
+target.map
+
+chains <- H.MCMC(dtarget, start=c(3,9), Eps=.5, L=20, N=1000, num.chains=4)
+chains <- H.MCMC(dtarget, start=c(3,9), Eps=.5, L=10, N=1000, num.chains=4)
+chains <- H.MCMC(dtarget, start=c(3,9), Eps=.5, L=7, N=1000, num.chains=4)
+trace_plot(chains)
+
+ target.map +
+   geom_path(data=data.frame(chains[[1]]), aes(x=X1, y=X2, z=0),
+          color='black', alpha=.6) +
+   geom_path(data=data.frame(chains[[2]]), aes(x=X1, y=X2, z=0),
+          color='red', alpha=.6) +
+   geom_path(data=data.frame(chains[[3]]), aes(x=X1, y=X2, z=0),
+          color='blue', alpha=.6) +
+   geom_path(data=data.frame(chains[[4]]), aes(x=X1, y=X2, z=0),
+          color='green', alpha=.6)
+
+
+# A slightly harder example
+dtarget <- function(x){
   dmvnorm(x, mean=c(3,10), sigma=matrix(c(3,3,3,7), nrow=2))
 }
 x1 <- seq(-6,12,length=101)
