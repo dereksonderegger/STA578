@@ -6,6 +6,9 @@
 \usage{
 trace_plot(chain)
 }
+\arguments{
+\item{chain}{Either a mcmc.list or a matrix or a vector}
+}
 \description{
 Create a traceplot from a MCMC chain or chains
 }

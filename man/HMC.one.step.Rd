@@ -4,7 +4,18 @@
 \alias{HMC.one.step}
 \title{One step of Hamiltonian Monte Carlo}
 \usage{
-HMC.one.step(U, Eps, L, current_q)
+HMC.one.step(U, current_q, Eps, L, m = 1)
+}
+\arguments{
+\item{U}{A function taking a single argument, which is the position.}
+
+\item{Eps}{The step size, epsilon.}
+
+\item{L}{The number of leapfrog steps.}
+
+\item{m}{The mass of the particle.}
+
+\item{q}{The current position.}
 }
 \description{
 One step of Hamiltonian Monte Carlo
@@ -22,14 +33,8 @@ target.map <- ggplot(contour.data, aes(x=x1, y=x2)) +
 target.map
 
 U <- function(x){ return( -log(dtarget(x))) }
-steps <- HMC.one.step(U, .4, L=40, c(runif(1,1,5),runif(1,8,12)))
-path.data <- as.data.frame(steps$q)
-colnames(path.data) <- c('x1','x2')
-target.map +
-  geom_path(data=path.data, aes(z=0), color='green', alpha=1) +
-  geom_point(data=path.data, aes(z=0), color='green') +
-  geom_point(data=path.data[1,], color='red', size=4) +
-  geom_point(data=path.data[nrow(path.data),], color='blue', size=4)
+steps <- HMC.one.step(U, c(runif(1,1,5),runif(1,8,12)), Eps=.4, L=20, m=1)
+plot_HMC_proposal_path(target.map, steps)
 
 
 # A little harder...
@@ -45,14 +50,8 @@ target.map <- ggplot(contour.data, aes(x=x1, y=x2)) +
 target.map
 
 U <- function(x){ return( -log(dtarget(x))) }
-steps <- HMC.one.step(U, .4, L=40, c(runif(1,-2,8),runif(1,4,16)))
-path.data <- as.data.frame(steps$q)
-colnames(path.data) <- c('x1','x2')
-target.map +
-  geom_path(data=path.data, aes(z=0), color='green', alpha=1) +
-  geom_point(data=path.data, aes(z=0), color='green') +
-  geom_point(data=path.data[1,], color='red', size=4) +
-  geom_point(data=path.data[nrow(path.data),], color='blue', size=4)
+steps <- HMC.one.step(U, c(runif(1,-2,8),runif(1,4,16)), Eps=.4, L=40, m=1)
+plot_HMC_proposal_path(target.map, steps)
 
 
 # Now a hard example!
@@ -69,13 +68,7 @@ target.map <- ggplot(contour.data, aes(x=x1, y=x2)) +
 target.map
 
 U <- function(x){ return( -log(dtarget(x))) }
-steps <- HMC.one.step(U, .15, L=1000, c(runif(1,-10,10),runif(1,0,10)))
-path.data <- as.data.frame(steps$q)
-colnames(path.data) <- c('x1','x2')
-target.map +
-  geom_path(data=path.data, aes(z=0), color='green', alpha=1) +
-  geom_point(data=path.data, aes(z=0), color='green') +
-  geom_point(data=path.data[1,], color='red', size=4) +
-  geom_point(data=path.data[nrow(path.data),], color='blue', size=4)
+steps <- HMC.one.step(U, c(runif(1,-10,10),runif(1,0,10)), Eps=.15, L=1000, m=1)
+plot_HMC_proposal_path(target.map, steps)
 }
 

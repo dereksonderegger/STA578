@@ -232,8 +232,16 @@ mMCMC <- function(df, start, rprop, dprop=NULL, N=1000, num.chains=4){
 
 
 
-#' Hamiltonian Markov Chain Monte Carlo
+#' Hamiltonian Monte Carlo
 #' 
+#' @param dtarget The target density function
+#' @param start The starting point. If a vector, all chains start at that point. If 
+#' is a list, then each element should be a chain starting point.
+#' @param Eps The stepsize epsilon
+#' @param L The number of leapfrog steps to take for each MCMC step.
+#' @param m The particle mass.
+#' @param N The number of Chain steps to take.
+#' @param num.chains The number of independent chains to create.
 #' @examples 
 #' dtarget <- function(x){
 #'   dmvnorm(x, mean=c(3,10), sigma=matrix(c(1,0,0,1), nrow=2)) 
@@ -246,20 +254,18 @@ mMCMC <- function(df, start, rprop, dprop=NULL, N=1000, num.chains=4){
 #'   stat_contour(aes(z=Z)) 
 #' target.map 
 #' 
-#' chains <- H.MCMC(dtarget, start=c(3,9), Eps=.5, L=20, N=1000, num.chains=4)
-#' chains <- H.MCMC(dtarget, start=c(3,9), Eps=.5, L=10, N=1000, num.chains=4)
-#' chains <- H.MCMC(dtarget, start=c(3,9), Eps=.5, L=7, N=1000, num.chains=4)
+#' # Poor behavior of the chain
+#' chains <- HMC(dtarget, start=c(3,9), Eps=.5, L=20, N=1000, num.chains=4)
 #' trace_plot(chains)
-#' 
-#'  target.map +
-#'    geom_path(data=data.frame(chains[[1]]), aes(x=X1, y=X2, z=0),
-#'           color='black', alpha=.6) +
-#'    geom_path(data=data.frame(chains[[2]]), aes(x=X1, y=X2, z=0),
-#'           color='red', alpha=.6) +
-#'    geom_path(data=data.frame(chains[[3]]), aes(x=X1, y=X2, z=0),
-#'           color='blue', alpha=.6) +
-#'    geom_path(data=data.frame(chains[[4]]), aes(x=X1, y=X2, z=0),
-#'           color='green', alpha=.6)  
+#' plot_2D_chains(target.map, chains)
+#' # better
+#' chains <- H.MCMC(dtarget, start=c(3,9), Eps=.5, L=10, N=1000, num.chains=4)
+#' trace_plot(chains)
+#' plot_2D_chains(target.map, chains)
+#' # Poor again
+#' chains <- HMC(dtarget, start=c(3,9), Eps=.5, L=7, N=1000, num.chains=4)
+#' trace_plot(chains)
+#' plot_2D_chains(target.map, chains)
 #'           
 #'           
 #' # A slightly harder example
@@ -270,24 +276,20 @@ mMCMC <- function(df, start, rprop, dprop=NULL, N=1000, num.chains=4){
 #' x2 <- seq(-11,31, length=101) 
 #' contour.data <- expand.grid(x1=x1, x2=x2) 
 #' contour.data$Z <- apply(contour.data, MARGIN=1, dtarget)
-#' target.map <- ggplot(contour.data, aes(x=x1, y=x2, z=Z)) +
-#'   stat_contour() 
+#' target.map <- ggplot(contour.data, aes(x=x1, y=x2)) +
+#'   stat_contour(aes(z=Z)) 
 #' target.map 
 #' 
-#' chains <- H.MCMC(dtarget, start=c(3,10), Eps=.4, L=2, N=2000, num.chains=4)
+#' chains <- HMC(dtarget, start=c(2,10), Eps=.4, L=6, N=200, num.chains=4)
 #' trace_plot(chains)
+#' plot_2D_chains(target.map, chains)
 #' 
-#'  target.map +
-#'    geom_path(data=data.frame(chains[[1]]), aes(x=X1, y=X2, z=0),
-#'           color='black', alpha=.6) +
-#'    geom_path(data=data.frame(chains[[2]]), aes(x=X1, y=X2, z=0),
-#'           color='red', alpha=.6) +
-#'    geom_path(data=data.frame(chains[[3]]), aes(x=X1, y=X2, z=0),
-#'           color='blue', alpha=.6) +
-#'    geom_path(data=data.frame(chains[[4]]), aes(x=X1, y=X2, z=0),
-#'           color='green', alpha=.6)  
+#' chains <- HMC(dtarget, start=c(2,10), Eps=.4, L=10, N=200, num.chains=4)
+#' trace_plot(chains)
+#' plot_2D_chains(target.map, chains)
 #'
-#' # Now a hard example!
+#'
+#' # Now a hard distribution!
 #' dtarget <- function(x){
 #'   B <- .05
 #'   exp( -x[1]^2 / 200 - (1/2)*(x[2]+B*x[1]^2 -100*B)^2 )
@@ -296,24 +298,19 @@ mMCMC <- function(df, start, rprop, dprop=NULL, N=1000, num.chains=4){
 #' x2 <- seq(-15,10, length=201)
 #' contour.data <- expand.grid(x1=x1, x2=x2) 
 #' contour.data$Z <- apply(contour.data, MARGIN=1, dtarget)
-#' target.map <- ggplot(contour.data, aes(x=x1, y=x2, z=Z)) +
-#'   stat_contour() 
+#' target.map <- ggplot(contour.data, aes(x=x1, y=x2)) +
+#'   stat_contour(aes(z=Z)) 
 #' target.map
 #'  
-#' chains <- H.MCMC(dtarget, start=c(0,5), Eps=2, L=20)
+#' chains <- HMC(dtarget, start=c(2,5), Eps=.5, L=10)
 #' trace_plot(chains)
+#' plot_2D_chains(target.map, chains)
 #' 
-#'  target.map +
-#'    geom_path(data=data.frame(chains[[1]]), aes(x=X1, y=X2, z=0),
-#'           color='black', alpha=.6) +
-#'    geom_path(data=data.frame(chains[[2]]), aes(x=X1, y=X2, z=0),
-#'           color='red', alpha=.6) +
-#'    geom_path(data=data.frame(chains[[3]]), aes(x=X1, y=X2, z=0),
-#'           color='blue', alpha=.6) +
-#'    geom_path(data=data.frame(chains[[4]]), aes(x=X1, y=X2, z=0),
-#'           color='green', alpha=.6)  
+#' chains <- HMC(dtarget, start=c(2,5), Eps=1, L=10)
+#' trace_plot(chains)
+#' plot_2D_chains(target.map, chains)
 #' @export
-H.MCMC <- function(dtarget, start, Eps=.2, L=10, N=1000, num.chains=4){
+HMC <- function(dtarget, start, Eps=.2, L=10, m=1, N=1000, num.chains=4){
   
   neg.log.dtarget <- function(x){
     return(-log(dtarget(x)))
@@ -339,7 +336,7 @@ H.MCMC <- function(dtarget, start, Eps=.2, L=10, N=1000, num.chains=4){
     chain <- matrix(NA, nrow=N, ncol=length(start[[m]]), dimnames = list(NULL, names(start[[m]])))
     chain[1, ] <- start[[m]]
     for( i in 2:N){
-      chain[i,] <- HMC.one.step(neg.log.dtarget, Eps, L, chain[i-1,])$value
+      chain[i,] <- HMC.one.step(neg.log.dtarget, chain[i-1,], Eps, L, m)$value
     }
     chains[[m]] <- as.mcmc( chain )
   }
@@ -349,6 +346,11 @@ H.MCMC <- function(dtarget, start, Eps=.2, L=10, N=1000, num.chains=4){
 
 #' One step of Hamiltonian Monte Carlo
 #' 
+#' @param U A function taking a single argument, which is the position.
+#' @param q The current position.
+#' @param Eps The step size, epsilon.
+#' @param L The number of leapfrog steps.
+#' @param m The mass of the particle. 
 #' @examples
 #' dtarget <- function(x){
 #'   dmvnorm(x, mean=c(3,10), sigma=matrix(c(1,0,0,1), nrow=2)) 
@@ -362,14 +364,8 @@ H.MCMC <- function(dtarget, start, Eps=.2, L=10, N=1000, num.chains=4){
 #' target.map 
 #' 
 #' U <- function(x){ return( -log(dtarget(x))) }
-#' steps <- HMC.one.step(U, .4, L=40, c(runif(1,1,5),runif(1,8,12)))
-#' path.data <- as.data.frame(steps$q)
-#' colnames(path.data) <- c('x1','x2')
-#' target.map + 
-#'   geom_path(data=path.data, aes(z=0), color='green', alpha=1) + 
-#'   geom_point(data=path.data, aes(z=0), color='green') + 
-#'   geom_point(data=path.data[1,], color='red', size=4) +
-#'   geom_point(data=path.data[nrow(path.data),], color='blue', size=4)
+#' steps <- HMC.one.step(U, c(runif(1,1,5),runif(1,8,12)), Eps=.4, L=20, m=1)
+#' plot_HMC_proposal_path(target.map, steps)
 #'   
 #'  
 #' # A little harder...     
@@ -385,14 +381,8 @@ H.MCMC <- function(dtarget, start, Eps=.2, L=10, N=1000, num.chains=4){
 #' target.map 
 #' 
 #' U <- function(x){ return( -log(dtarget(x))) }
-#' steps <- HMC.one.step(U, .4, L=40, c(runif(1,-2,8),runif(1,4,16)))
-#' path.data <- as.data.frame(steps$q)
-#' colnames(path.data) <- c('x1','x2')
-#' target.map + 
-#'   geom_path(data=path.data, aes(z=0), color='green', alpha=1) + 
-#'   geom_point(data=path.data, aes(z=0), color='green') + 
-#'   geom_point(data=path.data[1,], color='red', size=4) +
-#'   geom_point(data=path.data[nrow(path.data),], color='blue', size=4)
+#' steps <- HMC.one.step(U, c(runif(1,-2,8),runif(1,4,16)), Eps=.4, L=40, m=1)
+#' plot_HMC_proposal_path(target.map, steps)
 #' 
 #' 
 #' # Now a hard example!
@@ -409,18 +399,12 @@ H.MCMC <- function(dtarget, start, Eps=.2, L=10, N=1000, num.chains=4){
 #' target.map
 #' 
 #' U <- function(x){ return( -log(dtarget(x))) }
-#' steps <- HMC.one.step(U, .15, L=1000, c(runif(1,-10,10),runif(1,0,10)))
-#' path.data <- as.data.frame(steps$q)
-#' colnames(path.data) <- c('x1','x2')
-#' target.map + 
-#'   geom_path(data=path.data, aes(z=0), color='green', alpha=1) + 
-#'   geom_point(data=path.data, aes(z=0), color='green') + 
-#'   geom_point(data=path.data[1,], color='red', size=4) +
-#'   geom_point(data=path.data[nrow(path.data),], color='blue', size=4)
+#' steps <- HMC.one.step(U, c(runif(1,-10,10),runif(1,0,10)), Eps=.15, L=1000, m=1)
+#' plot_HMC_proposal_path(target.map, steps)
 #' @export
-HMC.one.step <- function(U, Eps, L, current_q){
+HMC.one.step <- function(U, current_q, Eps, L, m=1){
   out <- list()
-  p <- rnorm(length(q), 0, 1)
+  p <- rmvnorm(1, rep(0, length(current_q)))
   current_p <- p
   q <- current_q
   
@@ -431,7 +415,7 @@ HMC.one.step <- function(U, Eps, L, current_q){
   
   p <- p - Eps*grad(U,q) / 2
   for(i in 2:L){
-    q <- q + Eps*p
+    q <- q + Eps*p/m
     out$q[i,] <- q
     if( i != L ){
       p <- p - Eps * grad(U,q)
@@ -455,7 +439,38 @@ HMC.one.step <- function(U, Eps, L, current_q){
   return(out)
 }
 
+#' Plot a Hamiltonian proposal path
+#' @param target.map A density plot of a 2-D distribution
+#' @param steps The output of HMC.one.step
+#' @export
+plot_HMC_proposal_path <- function(target.map, steps){
+  path.data <- as.data.frame(steps$q)
+  colnames(path.data) <- c('x','y')
+  out <- target.map + 
+    geom_path(data=path.data, aes(x=x, y=y), color='orange') + 
+    geom_point(data=path.data, aes(x=x, y=y), color='orange') + 
+    geom_point(data=path.data[1,], aes(x=x, y=y), color='red', size=4) +
+    geom_point(data=path.data[nrow(path.data),], aes(x=x, y=y), color='blue', size=4)
+  return(out)
+}
+
+#' Plot MCMC chains along a 2D density
+#' @param target.map A density plot of a 2-D distribution
+#' @param chains An mcmc.list
+#' @export
+plot_2D_chains <- function(target.map, chains){
+  data <- ggs(chains) %>% 
+      mutate( 
+        Parameter = factor(Parameter, levels=unique(Parameter), labels=c('x','y')),
+        Chain = factor(Chain)) %>%
+      spread(Parameter, value)
+  out <- target.map + geom_path(data=data, aes(x=x, y=y, color=Chain))
+  return(out)
+}
+
+
 #' Create a traceplot from a MCMC chain or chains
+#' @param chain Either a mcmc.list or a matrix or a vector
 #' @export
 trace_plot <- function( chain ){
   if( is.mcmc.list(chain) ){
