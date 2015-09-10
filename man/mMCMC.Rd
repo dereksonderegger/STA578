@@ -54,8 +54,8 @@ x2 <- seq(-11,31, length=101)
 contour.data <- expand.grid(x1=x1, x2=x2)
 contour.data$Z <- apply(contour.data, MARGIN=1, dtarget)
 
-target.map <- ggplot(contour.data, aes(x=x1, y=x2, z=Z)) +
-  stat_contour()
+target.map <- ggplot(contour.data, aes(x=x1, y=x2)) +
+  stat_contour(aes(z=Z))
 target.map
 
 rprop <- function(x){
@@ -65,32 +65,21 @@ start <- c(x1=0, x2=0)
 
 chain <- mMCMC(df=dtarget, start, rprop=rprop,
                N=20, num.chains=1)
-target.map +
-  geom_path(data=data.frame(chain[[1]]), aes(z=0),
-            color='red', alpha=.6) +
-  geom_point(data=data.frame(chain[[1]]), aes(z=0),
-             color='red', alpha=.6, size=2)
+plot_2D_chains(target.map, chains)
 
 chain <- mMCMC(df=dtarget, start, rprop=rprop,
                N=100, num.chains=1)
-target.map +
-  geom_path(data=data.frame(chain[[1]]), aes(z=0),
-            color='red', alpha=.6) +
-  geom_point(data=data.frame(chain[[1]]), aes(z=0),
-             color='red', alpha=.6, size=2)
+plot_2D_chains(target.map, chains)
 
 chain <- mMCMC(df=dtarget, start, rprop=rprop,
                N=1000, num.chains=1)
-target.map +
-  geom_path(data=data.frame(chain[[1]]), aes(z=0),
-            color='red', alpha=.6) +
-  geom_point(data=data.frame(chain[[1]]), aes(z=0),
-             color='red', alpha=.6, size=2)
+plot_2D_chains(target.map, chains)
 traceplot( chain )
 plot(chain)
 
 chains <- mMCMC(df=dtarget, start, rprop=rprop,
                N=1000, num.chains=4)
+plot_2D_chains(target.map, chains)
 plot(chains)
 }
 
